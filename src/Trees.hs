@@ -44,7 +44,7 @@ type instance XXExp UD = Void
 
 data UD
 
-type XExpUD = XExp UD
+type UDExp = XExp UD
 
 void :: Void
 void = error "void"
@@ -53,6 +53,13 @@ incLit :: Exp -> Exp
 incLit (Lit i) = Lit (i + 1)
 incLit e = e
 
-incLitX :: XExpUD -> XExpUD
-incLitX (XLit _ i) = XLit void (i + 1)
+-- incLitX :: UDExp -> UDExp
+-- incLitX (XLit _ i) = XLit void (i + 1)
+-- incLitX e = e
+
+pattern UDLit :: Integer -> UDExp
+pattern UDLit i <- XLit _ i where UDLit i = XLit void i
+
+incLitX :: UDExp -> UDExp
+incLitX (UDLit i) = UDLit (i + 1)
 incLitX e = e
