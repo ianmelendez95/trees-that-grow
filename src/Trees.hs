@@ -214,3 +214,27 @@ type instance XXAExp LE a = (a, LEExp a, LEExp a)
 
 pattern LELet :: a -> LEExp a -> LEExp a -> LEExp a
 pattern LELet x m n = XAExp (x, m, n)
+
+-------------------------
+-- Existentials and GADTs
+-------------------------
+
+data ExpGADT a where 
+  Con :: c -> ExpGADT c
+  AppGADT :: (a -> String) -> ExpGADT (a -> b) -> ExpGADT a -> ExpGADT b
+  AddGADT :: ExpGADT (Int -> Int -> Int)
+  AndGADT :: ExpGADT (Bool -> Bool -> Bool)
+
+data XGExp x a where 
+  XGCon :: XXGCon x c   -> c                -> XGExp x c
+  XGApp :: XXGApp x a b -> XGExp x (a -> b) -> XGExp x a -> XGExp x b
+  XGAdd :: XXGAdd x     -> XGExp x (Int -> Int -> Int)
+  XGAnd :: XXGAnd x     -> XGExp x (Bool -> Bool -> Bool) 
+  XGExp :: XXGExp x a   -> XGExp x a
+
+type family XXGCon x c
+type family XXGApp x a b
+type family XXGAdd x
+type family XXGAnd x
+type family XXGExp x a
+
