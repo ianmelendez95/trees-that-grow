@@ -2,11 +2,14 @@
 {-# LANGUAGE GADTs, EmptyCase, StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators, PatternSynonyms #-}
 {-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Trees where 
 
 import GHC.Types (Constraint)
 import Data.Void
+import Data.Kind
 
 data Exp = Lit Integer 
          | Var Var
@@ -151,4 +154,32 @@ printPEE :: PEExp -> String
 printPEE = printE p
   where 
     p v = "{{" ++ show v ++ "}}"
+
+type XForall (a :: Type -> Constraint) e = 
+  ( a (XXLit e)
+  , a (XXVar e)
+  , a (XXAnn e)
+  , a (XXAbs e)
+  , a (XXApp e)
+  , a (XXExp e)
+  )
+
+instance XForall Show e => Show (XExp e) where 
+  -- show :: XForall Show e => XExp e -> String
+  show = undefined
   
+-- 'Modifying' Constructor
+
+type SAExp = XExp SA
+data SA
+
+type instance XXLit SA = Void
+type instance XXVar SA = Void
+type instance XXAnn SA = Void
+type instance XXAbs SA = Void
+type instance XXApp SA = Void
+type instance XXExp SA = (SAExp, [SAExp])
+
+-- the provided SAApp doesn't actually use XApp, so it's effectively 'overridden'
+pattern SAApp :: SAExp -> [SAExp] -> SAExp
+pattern SAApp l ms = XExp (l, ms)
