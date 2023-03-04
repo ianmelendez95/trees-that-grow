@@ -20,7 +20,7 @@ data Typ = Int
          | Fun Typ Typ
          deriving Eq
 
-data Val = VInt Int | VString String
+data Val = VInt Int | VString String deriving Show
 
 type family XXLit x
 type family XXVar x
@@ -126,3 +126,29 @@ type instance XXExp PE = Val
 
 pattern PEVal :: Val -> PEExp
 pattern PEVal v = XExp v
+
+-- Generic Functions
+
+printT :: Typ -> String 
+printT Int = "Int"
+printT (Fun a b) = "(" ++ printT a ++ ") -> " ++ printT b
+
+printE :: (XXExp e -> String) -> XExp e -> String
+printE _ (XLit _ i) = show i
+printE _ (XVar _ x) = x
+printE p (XAnn _ m a) = "(" ++ printE p m ++ ")::(" ++ printT a ++ ")"
+printE p (XAbs _ x n) = "\\" ++ x ++ "." ++ printE p n
+printE p (XApp _ l m) = "(" ++ printE p l ++ ") (" ++ printE p m ++ ")"
+printE p (XExp e) = p e
+
+printUDE :: UDExp -> String
+printUDE = printE absurd
+
+printTCE :: TCExp -> String
+printTCE = printE absurd
+
+printPEE :: PEExp -> String
+printPEE = printE p
+  where 
+    p v = "{{" ++ show v ++ "}}"
+  
