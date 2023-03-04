@@ -18,6 +18,7 @@ type Var = String
 
 data Typ = Int
          | Fun Typ Typ
+         deriving Eq
 
 data Val = VInt Int | VString String
 
@@ -68,6 +69,13 @@ incLitX e = e
 
 -- Field Ext
 
+-- data XExp x = XLit (XXLit x) Integer 
+--             | XVar (XXVar x) Var
+--             | XAnn (XXAnn x) (XExp x) Typ
+--             | XAbs (XXAbs x) Var (XExp x)
+--             | XApp (XXApp x) (XExp x) (XExp x)
+--             | XExp (XXExp x)
+
 type TCExp = XExp TC
 
 data TC
@@ -79,8 +87,28 @@ type instance XXAbs TC = Void
 type instance XXApp TC = Typ
 type instance XXExp TC = Void
 
+pattern TCLit :: Integer -> TCExp
+pattern TCLit i <- XLit _ i where TCLit i = XLit void i
+
+pattern TCVar :: Var -> TCExp
+pattern TCVar v <- XVar _ v
+
+pattern TCAnn :: TCExp -> Typ -> TCExp
+pattern TCAnn m a <- XAnn _ m a
+
+pattern TCAbs :: Var -> TCExp -> TCExp
+pattern TCAbs v e <- XAbs _ v e
+
 pattern TCApp :: Typ -> TCExp -> TCExp -> TCExp
-pattern TCApp a l m = XApp a l m
+pattern TCApp t e1 e2 = XApp t e1 e2
+
+check :: TCExp -> [(Var, Typ)] -> Typ -> Bool
+check (TCLit _)     _   Int       = True
+check (TCVar x)     env c         = maybe False (== c) (lookup x env)
+check (TCAnn m a)   env c         = (a == c) || check m env c
+check (TCAbs x n)   env (Fun a b) = check n ((x, a) : env) b
+check (TCApp a l m) env c         = check l env (Fun a c) || check m env a
+check _             _   _         = False
 
 -- Constructor Ext
 
