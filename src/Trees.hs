@@ -28,9 +28,9 @@ type family XXExp x
 
 data XExp x = XLit (XXLit x) Integer 
             | XVar (XXVar x) Var
-            | XAnn (XXAnn x) Exp Typ
-            | XAbs (XXAbs x) Var Exp
-            | XApp (XXApp x) Exp Exp
+            | XAnn (XXAnn x) (XExp x) Typ
+            | XAbs (XXAbs x) Var (XExp x)
+            | XApp (XXApp x) (XExp x) (XExp x)
             | XExp (XXExp x)
 
 -- UD - undecorated
@@ -63,3 +63,18 @@ pattern UDLit i <- XLit _ i where UDLit i = XLit void i
 incLitX :: UDExp -> UDExp
 incLitX (UDLit i) = UDLit (i + 1)
 incLitX e = e
+
+
+type TCExp = XExp TC
+
+data TC
+
+type instance XXLit TC = Void
+type instance XXVar TC = Void
+type instance XXAnn TC = Void
+type instance XXAbs TC = Void
+type instance XXApp TC = Typ
+type instance XXExp TC = Void
+
+pattern TCApp :: Typ -> TCExp -> TCExp -> TCExp
+pattern TCApp a l m = XApp a l m
