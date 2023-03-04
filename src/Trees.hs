@@ -19,6 +19,8 @@ type Var = String
 data Typ = Int
          | Fun Typ Typ
 
+data Val = VInt Int | VString String
+
 type family XXLit x
 type family XXVar x
 type family XXAnn x
@@ -64,6 +66,7 @@ incLitX :: UDExp -> UDExp
 incLitX (UDLit i) = UDLit (i + 1)
 incLitX e = e
 
+-- Field Ext
 
 type TCExp = XExp TC
 
@@ -78,3 +81,20 @@ type instance XXExp TC = Void
 
 pattern TCApp :: Typ -> TCExp -> TCExp -> TCExp
 pattern TCApp a l m = XApp a l m
+
+-- Constructor Ext
+
+-- (?) Can there be multiple constructor extensions for a single type discriminator
+
+type PEExp = XExp PE
+data PE
+
+type instance XXLit PE = Void
+type instance XXVar PE = Void
+type instance XXAnn PE = Void
+type instance XXAbs PE = Void
+type instance XXApp PE = Void
+type instance XXExp PE = Val
+
+pattern PEVal :: Val -> PEExp
+pattern PEVal v = XExp v
