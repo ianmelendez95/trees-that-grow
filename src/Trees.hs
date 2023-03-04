@@ -183,3 +183,34 @@ type instance XXExp SA = (SAExp, [SAExp])
 -- the provided SAApp doesn't actually use XApp, so it's effectively 'overridden'
 pattern SAApp :: SAExp -> [SAExp] -> SAExp
 pattern SAApp l ms = XExp (l, ms)
+
+---------------------
+-- Type Parameter Ext
+---------------------
+
+type family XXALit x a
+type family XXAVar x a
+type family XXAAnn x a
+type family XXAAbs x a
+type family XXAApp x a
+type family XXAExp x a
+
+data XAExp x a = XALit (XXALit x a) Integer 
+               | XAVar (XXAVar x a) Var
+               | XAAnn (XXAAnn x a) (XAExp x a) Typ
+               | XAAbs (XXAAbs x a) Var         (XAExp x a)
+               | XAApp (XXAApp x a) (XAExp x a) (XAExp x a)
+               | XAExp (XXAExp x a)
+
+type LEExp a = XAExp LE a
+data LE
+
+type instance XXALit LE a = Void
+type instance XXAVar LE a = Void
+type instance XXAAnn LE a = Void
+type instance XXAAbs LE a = Void
+type instance XXAApp LE a = Void
+type instance XXAExp LE a = (a, LEExp a, LEExp a)
+
+pattern LELet :: a -> LEExp a -> LEExp a -> LEExp a
+pattern LELet x m n = XAExp (x, m, n)
